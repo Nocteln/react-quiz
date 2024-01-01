@@ -10,6 +10,8 @@ const initialState = {
   questions: [],
   status: "loading",
   index: 0,
+  answer: null,
+  points: 0,
 };
 
 const reducer = (state, action) => {
@@ -20,13 +22,24 @@ const reducer = (state, action) => {
       return { ...state, status: "error" };
     case "start":
       return { ...state, status: "active" };
+    case "newAnswer":
+      const question = state.questions.at(state.index);
+
+      return {
+        ...state,
+        answer: action.payload,
+        points:
+          action.payload === question.correctOption
+            ? state.points + question.points
+            : state.points,
+      };
     default:
       return new Error("Unknown action type");
   }
 };
 
 export default function App() {
-  const [{ questions, status, index }, dispach] = useReducer(
+  const [{ questions, status, index, answer }, dispach] = useReducer(
     reducer,
     initialState
   );
@@ -50,7 +63,13 @@ export default function App() {
         {status === "ready" && (
           <StartScreen numQuestions={numQuestions} dispatch={dispach} />
         )}
-        {status === "active" && <Question question={questions[index]} />}
+        {status === "active" && (
+          <Question
+            question={questions[index]}
+            dispatch={dispach}
+            answer={answer}
+          />
+        )}
       </Main>
     </div>
   );
